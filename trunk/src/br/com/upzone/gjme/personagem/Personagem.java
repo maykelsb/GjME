@@ -23,6 +23,9 @@ public abstract class Personagem extends Sprite {
    */
   public final static int PARADO = 0;
 
+  public final static int DIREITA = 0;
+  public final static int ESQUERDA = 1;
+
   /**
    * Armazena os estados válidos para personagens base.
    * 
@@ -37,7 +40,13 @@ public abstract class Personagem extends Sprite {
    * Este estado é assumido quando o personagem não está executando nenhuma
    * ação. Geralmente será utilizado o estado pré-definido Personagem.PARADO.
    */
-  protected Integer intEstadoDefault;
+  protected int iEstadoDefault;
+
+  protected int iEstadoAtual;
+  private int iUltimoEstado;
+
+  private int iDirecaoAtual = Personagem.DIREITA;
+  private int iUltimaDirecao = Personagem.DIREITA;
 
   /**
    * Quantidade de pontos de vida do personagem.
@@ -108,6 +117,41 @@ public abstract class Personagem extends Sprite {
    * @see Personagem.intEstadoDefault;
    */
   protected void setEstadoDefault(int iID) {
-    this.intEstadoDefault = new Integer(iID);
+    this.iEstadoDefault = iID;
+    this.setFrameSequence(((Estado)this.hstEstados.get(
+            new Integer(this.iEstadoDefault))).getFrames());
+    this.iEstadoAtual = iID;
+    this.iUltimoEstado = this.iEstadoAtual;
+  }
+
+  /**
+   * Faz a alteração de estado atual do personagem.
+   * 
+   * Ao realizar a troca de estado, seta o atual estado como o último estado.
+   * 
+   * @param iID Identificador do novo estado do personagem;
+   */
+  public void setEstado(int iID) {
+    this.iUltimoEstado = this.iEstadoAtual;
+    this.iEstadoAtual = iID;
+
+    ((Estado)this.hstEstados.get(new Integer(this.iEstadoAtual))).iniciaEstado();
+  }
+
+  public Estado getEstado(int iID) {
+    return (Estado)this.hstEstados.get(new Integer(this.iEstadoAtual));
+  }
+
+  public int getDirecaoAtual() {
+    return this.iDirecaoAtual;
+  }
+
+  public void setDirecaoAtual(int iNovaDirecao) {
+    this.iUltimaDirecao = this.iDirecaoAtual;
+    this.iDirecaoAtual = iNovaDirecao;
+  }
+
+  public int getUltimaDirecao() {
+    return this.iUltimaDirecao;
   }
 }

@@ -35,6 +35,14 @@ public abstract class Estado {
   private int iStatus = Estado.PARADO;
 
   /**
+   * ID de identificação do estado.
+   * 
+   * Este ID é utilizado para setar seqüências de estados, defindo este como
+   * um pos estado, por exemplo.
+   */
+  private int iID;
+
+  /**
    * Referência para o personagem a quem o estado pertence.
    *
    * @see br.com.upzone.gjme.personagem.Personagem
@@ -44,11 +52,11 @@ public abstract class Estado {
   /**
    * Indica um estado que deve ser executado antes deste.
    */
-  protected Estado preEstado = null;
+  protected int iPreEstado;
   /**
    * Indica um estado que deve ser executado após este.
    */
-  protected Estado posEstado = null;
+  protected int iPosEstado;
 
   /**
    * Array de frames da animação do estado.
@@ -67,9 +75,10 @@ public abstract class Estado {
    * @param psg Referência para o personagem dono do estado;
    * @param iarFrames Seqüência de identificadores dos frames da animação do estado. Ex: {7, 5, 3}
    */
-  public Estado(Personagem psg, int[] iarFrames) {
+  public Estado(Personagem psg, int iID, int[] iarFrames) {
     this.personagem = psg;
     this.iarFrames = iarFrames;
+    this.iID = iID;
   }
 
   /**
@@ -79,13 +88,17 @@ public abstract class Estado {
    * @param iFrameInicial O identificador do frame inicial da animação;
    * @param iFrameFinal O identificador do frame final da animação;
    */
-  public Estado(Personagem psg, int iFrameInicial, int iFrameFinal) {
-    this.personagem = psg;
+  public Estado(Personagem psg, int iID, int iFrameInicial, int iFrameFinal) {
     this.iarFrames = new int[iFrameFinal - iFrameInicial + 1];
     int j = 0;
     for (int i = iFrameInicial; i <= iFrameFinal; i++) {
       this.iarFrames[j++] = i;
     }
+    this.iID = iID;
+  }
+
+  public int[] getFrames() {
+    return this.iarFrames;
   }
 
   /**
@@ -93,15 +106,15 @@ public abstract class Estado {
    *
    * @return O pré estado deste estado.
    */
-  public Estado getPreEstado() { return this.preEstado; }
+  public int getPreEstado() { return this.iPreEstado; }
   /**
    * Define um pré estado.
    *
    * @param preEstado Um novo pré estado para este estado.
    */
-  public void setPreEstado(Estado preEstado) {
-    this.preEstado = preEstado;
-    this.preEstado.setPosEstado(this);
+  public void setPreEstado(int iPreEstado) {
+    this.iPreEstado = iPreEstado;
+    this.personagem.getEstado(this.iPreEstado).setPosEstado(this.iID);
   }
 
   /**
@@ -109,15 +122,15 @@ public abstract class Estado {
    * 
    * @return O pós-estado deste estado.
    */
-  public Estado getPosEstado() { return this.posEstado; }
+  public int getPosEstado() { return this.iPosEstado; }
   /**
    * Define um pós estado.
    * 
    * @param posEstado Um novo pós estado para este estado.
    */
-  public void setPosEstado(Estado posEstado) {
-    this.posEstado = posEstado;
-    this.posEstado.setPreEstado(this);
+  public void setPosEstado(int iPosEstado) {
+    this.iPosEstado = iPosEstado;
+    this.personagem.getEstado(this.iPosEstado).setPreEstado(this.iID);
   }
 
   /**
@@ -143,8 +156,10 @@ public abstract class Estado {
   //protected abstract boolean ValidaEstado();
   
   // @TODO pode setar um preh estado para ser executado
-  protected abstract void IniciaEstado();
+  public abstract void iniciaEstado();
 
   // @TODO Pode ser utiliziado para lançamento de projéteis;
-  protected abstract void FinalizaEstado();
+  protected abstract void finalizaEstado();
+
+  public abstract void processarInput(int iKeyState);
 }

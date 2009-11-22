@@ -24,7 +24,7 @@
  * Contributor(s): None
  *
  * Alternatively, the contents of this file may be used under the terms
- * of the New BSD license (the  "New BSD License"), in which case the
+ * of the New BSD license (the "New BSD License"), in which case the
  * provisions of New BSD License are applicable instead of those
  * above. If you wish to allow use of your version of this file only
  * under the terms of the New BSD License and not to allow others to use
@@ -34,12 +34,19 @@
  * the provisions above, a recipient may use your version of this file
  * under either the MPL or the New BSD License.
  */
-package br.com.upzone.gjme.personagem.estado;
+package br.com.upzone.gjme;
 
 /**
  *
- * @author Gardner
+ * @author Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  */
-public interface EstadoComProjetil {
-
+public final class Direcoes {
+  /**
+   * Indica o lado direto.
+   */
+  public final static int DIREITA = 0;
+  /**
+   * Indica o lado esquerdo.
+   */
+  public final static int ESQUERDA = 1;
 }

@@ -1,6 +1,38 @@
 /*
+ * GjME - Game JavaME
+ * A Framework to build JavaME games quickly.
+ * Copyright (c) 2009 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
+ * -----------------------------------------------------------------------------
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.1 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
  *
- * @author Maykel "Gardner" dos Santos braz <maykelsb@yahoo.com.br>
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is
+ *   Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>.
+ *
+ * The Initial Developer of the Original Code is
+ *   Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>.
+ * Portions created by Initial Developer are Copyright (C) 2009
+ * Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s): None
+ *
+ * Alternatively, the contents of this file may be used under the terms
+ * of the New BSD license (the  "New BSD License"), in which case the
+ * provisions of New BSD License are applicable instead of those
+ * above. If you wish to allow use of your version of this file only
+ * under the terms of the New BSD License and not to allow others to use
+ * your version of this file under the MPL, indicate your decision by
+ * deleting the provisions above and replace them with the notice and
+ * other provisions required by the New BSD License. If you do not delete
+ * the provisions above, a recipient may use your version of this file
+ * under either the MPL or the New BSD License.
  */
 package br.com.upzone.gjme.personagem.estado;
 
@@ -13,26 +45,55 @@ import br.com.upzone.gjme.personagem.Personagem;
  */
 public abstract class Estado {
 
+  public final static boolean TIP_EST_CONTINUO = true;
+  public final static boolean TIP_EST_NAO_CONTINUO = false;
+  
+  protected boolean bTipoEstado = Estado.TIP_EST_CONTINUO;
+  public boolean estadoContinuo() { return this.bTipoEstado; }
+  public Estado defineContinuidade(boolean bContinuo) { this.bTipoEstado = bContinuo; return this; }
+
   /**
    * Indica que o estado ainda não iniciou seu ciclo de execução.
    */
-  protected static final int PARADO = -1;
+  public static final int STS_EST_PARADO = -1;
   /**
    * Este status indica que o estado está em execução.
    */
-  protected static final int EM_EXECUCAO = 0;
+  public static final int STS_EST_EM_EXECUCAO = 0;
   /**
    * Indica que o estado já chegou ao fim de sua execução.
    */
-  protected static final int FINALIZADO = 1;
-
+  public static final int STS_EST_FINALIZADO = 1;
   /**
    * Indica o status atual do Estado.
    * @see Estado.PARADO;
    * @see Estado.EM_EXECUCAO;
    * @see Estado.FINALIZADO;
    */
-  private int iStatus = Estado.PARADO;
+  protected int iStatus = Estado.STS_EST_PARADO;
+
+  /**
+   * Define um status para o estado.
+   *
+   * @param iStatus Novo status.
+   * @see Estado.PARADO;
+   * @see Estado.EM_EXECUCAO;
+   * @see Estado.FINALIZADO;
+   */
+  public void setStatus(int iStatus) { this.iStatus = iStatus; }
+  /**
+   * Retorna o status atual do estado.
+   *
+   * @return Status do estado.
+   * @see Estado.PARADO;
+   * @see Estado.EM_EXECUCAO;
+   * @see Estado.FINALIZADO;
+   */
+  public int getStatus() { return this.iStatus; }
+
+  public boolean finalizado() {
+    return (this.iStatus == Estado.STS_EST_FINALIZADO);
+  }
 
   /**
    * ID de identificação do estado.
@@ -52,11 +113,15 @@ public abstract class Estado {
   /**
    * Indica um estado que deve ser executado antes deste.
    */
-  protected int iPreEstado;
+  protected int iPreEstado = Personagem.EST_PERSON_INVALIDO;
   /**
    * Indica um estado que deve ser executado após este.
    */
-  protected int iPosEstado;
+  protected int iPosEstado = Personagem.EST_PERSON_INVALIDO;
+
+  public boolean posEstadoValido() {
+    return (iPosEstado != Personagem.EST_PERSON_INVALIDO);
+  }
 
   /**
    * Array de frames da animação do estado.
@@ -75,7 +140,7 @@ public abstract class Estado {
    * @param psg Referência para o personagem dono do estado;
    * @param iarFrames Seqüência de identificadores dos frames da animação do estado. Ex: {7, 5, 3}
    */
-  public Estado(Personagem psg, int iID, int[] iarFrames) {
+  protected Estado(Personagem psg, int iID, int[] iarFrames) {
     this.personagem = psg;
     this.iarFrames = iarFrames;
     this.iID = iID;
@@ -88,12 +153,13 @@ public abstract class Estado {
    * @param iFrameInicial O identificador do frame inicial da animação;
    * @param iFrameFinal O identificador do frame final da animação;
    */
-  public Estado(Personagem psg, int iID, int iFrameInicial, int iFrameFinal) {
+  protected Estado(Personagem psg, int iID, int iFrameInicial, int iFrameFinal) {
     this.iarFrames = new int[iFrameFinal - iFrameInicial + 1];
     int j = 0;
     for (int i = iFrameInicial; i <= iFrameFinal; i++) {
       this.iarFrames[j++] = i;
     }
+    this.personagem = psg;
     this.iID = iID;
   }
 
@@ -128,38 +194,10 @@ public abstract class Estado {
    * 
    * @param posEstado Um novo pós estado para este estado.
    */
-  public void setPosEstado(int iPosEstado) {
+  public Estado setPosEstado(int iPosEstado) {
     this.iPosEstado = iPosEstado;
-    this.personagem.getEstado(this.iPosEstado).setPreEstado(this.iID);
+    return this;
   }
 
-  /**
-   * Define um status para o estado.
-   *
-   * @param iStatus Novo status.
-   * @see Estado.PARADO;
-   * @see Estado.EM_EXECUCAO;
-   * @see Estado.FINALIZADO;
-   */
-  public void setStatus(int iStatus) { this.iStatus = iStatus; }
-  /**
-   * Retorna o status atual do estado.
-   *
-   * @return Status do estado.
-   * @see Estado.PARADO;
-   * @see Estado.EM_EXECUCAO;
-   * @see Estado.FINALIZADO;
-   */
-  public int getStatus() { return this.iStatus; }
-
-  // @TODO pode avaliar a execução de um pré estado
-  //protected abstract boolean ValidaEstado();
-  
-  // @TODO pode setar um preh estado para ser executado
-  public abstract void iniciaEstado();
-
-  // @TODO Pode ser utiliziado para lançamento de projéteis;
-  protected abstract void finalizaEstado();
-
-  public abstract void processarInput(int iKeyState);
+  public abstract void executeNoEstado();
 }

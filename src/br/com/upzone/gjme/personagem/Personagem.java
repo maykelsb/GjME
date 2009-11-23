@@ -162,6 +162,12 @@ public abstract class Personagem extends Sprite {
   }
 
   /**
+   * Indica que os frames do personagem devem ser refletidos ao mudar de direção.
+   * 
+   * @see Personagem.setDirecaoPersonagem();
+   */
+  protected boolean bRefletirSprite = false;
+  /**
    * Indica a direção para a qual o personagem está virado.
    *
    * @see Direcoes;
@@ -179,18 +185,32 @@ public abstract class Personagem extends Sprite {
    * Define uma nova direção para o personagem.
    *
    * @param iNovaDirecao Um dos valores representando DIREITA ou ESQUERDA;
-   * @see Personagem.iDirecaoPersonagem
+   * @see Personagem.iDirecaoPersonagem;
+   * @see javax.microedition.lcdui.game.Sprite.setTransform();
    */
   public void setDirecaoPersonagem(int iNovaDirecao) {
+    if (this.bRefletirSprite && iNovaDirecao == Direcoes.DIREITA) {
+      this.setTransform(Sprite.TRANS_NONE);
+    } else if (this.bRefletirSprite && iNovaDirecao == Direcoes.ESQUERDA) {
+      this.setTransform(Sprite.TRANS_MIRROR);
+    }
     this.iDirecaoPersonagem = iNovaDirecao;
   }
 
-  protected int iTelaLargura;
-  protected int iTelaAltura;
-
-
-
-
+  /**
+   * Largura da tela do dispositivo.
+   * 
+   * Utilizado para cálculos de deslocamento do personagem.
+   * @see Personagem.deslocarNaHorizontal();
+   */
+  private int iTelaLargura;
+  /**
+   * Altura da tela do dispositivo.
+   *
+   * Utilizado para cálculos de deslocamento do personagem.
+   * @see Personagem.deslocarNaVertical();
+   */
+  private int iTelaAltura;
 
   /**
    * Quantidade de pontos de vida do personagem.
@@ -213,24 +233,18 @@ public abstract class Personagem extends Sprite {
    * @param iHeight Altura dos frames em pixels;
    * @param iX Coordenada X para posicionamento do personagem;
    * @param iY Coordenada Y para posicionamento do personagme;
+   * @param iTelaLargura Largura da tela para cálculos de deslocamento do personagem;
+   * @param iTelaAltura Altura da tela para cálculos de deslocamento do personagem;
    */
-  public Personagem(Image imgSS, int iWidth, int iHeight, int iX, int iY) {
+  public Personagem(Image imgSS, int iWidth, int iHeight,
+          int iX, int iY, int iTelaLargura, int iTelaAltura, int iVelDeslocamento) {
     super(imgSS, iWidth, iHeight);
     this.defineReferencePixel(iWidth / 2, iHeight / 2);
     this.setPosition(iX, iY);
-  }
-
-  /**
-   * Cria um novo personagem com determinada velocidade de deslocamento.
-   * 
-   * @param iVelDeslocamento A velocidade de deslocamento do personagem.
-   * 
-   * @see Personagem
-   */
-  public Personagem(Image imgSS, int iWidth, int iHeight, int iX, int iY,
-          int iVelDeslocamento) {
-    this(imgSS, iWidth, iHeight, iX, iY);
     this.iVelDeslocamento = iVelDeslocamento;
+
+    this.iTelaLargura = iTelaLargura;
+    this.iTelaAltura = iTelaAltura;
   }
 
   /**
@@ -284,8 +298,34 @@ public abstract class Personagem extends Sprite {
     }
   }
 
+  /**
+   * Faz os cálculos de deslocamento horizontal do personagem.
+   */
+  public void deslocarNaHorizontal() {
+    this.deslocarNaHorizontal(0);
+  }
 
+  /**
+   * Faz os cálculos de deslocamento horizontal do personagem.
+   * 
+   * @param iAjusteVelocidade Aplica ajustes no cálculo de velocidade.
+   */
+  public void deslocarNaHorizontal(int iAjusteVelocidade) {
+    // -- Deslocamento para a direita
+    if (this.iDirecaoPersonagem == Direcoes.DIREITA) {
+      if ((this.iTelaLargura - this.getRefPixelX()) > this.iVelDeslocamento + iAjusteVelocidade) {
+        this.setPosition(this.getX() + this.iVelDeslocamento + iAjusteVelocidade, this.getY());
+      }
+    // -- Deslocamento para a esquerda
+    } else if (this.iDirecaoPersonagem == Direcoes.ESQUERDA) {
+      if ((this.getRefPixelX() - (this.iVelDeslocamento + iAjusteVelocidade)) > 0) {
+        this.setPosition(this.getX() - (this.iVelDeslocamento + iAjusteVelocidade), this.getY());
+      }
+    }
+  }
 
-
-  public abstract void setTamanhoTela(int iLargura, int iAltura);
+  /**
+   * Faz os cálculos de deslocamento vertical do personagem.
+   */
+  public void deslocarNaVertical() { }
 }

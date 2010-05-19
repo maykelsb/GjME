@@ -40,7 +40,7 @@ package br.com.upzone.gjme.personagem;
  *
  * @author Gardner
  */
-public interface IPersonagemControlavel {
+public interface GjME_IPersonagemControlavel {
 
   public void processarInput(int iKey);
 }

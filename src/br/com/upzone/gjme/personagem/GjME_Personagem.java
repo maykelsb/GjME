@@ -41,8 +41,8 @@ import java.util.Hashtable;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
 
-import br.com.upzone.gjme.Direcoes;
-import br.com.upzone.gjme.personagem.estado.Estado;
+import br.com.upzone.gjme.GjME_Direcoes;
+import br.com.upzone.gjme.personagem.estado.GjME_Estado;
 
 /**
  * Classe base para definição de personagens.
@@ -62,7 +62,7 @@ import br.com.upzone.gjme.personagem.estado.Estado;
  * @author Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  * @abstract
  */
-public abstract class Personagem extends Sprite {
+public abstract class GjME_Personagem extends Sprite {
   
   /**
    * Indica o estado inicial do personagem, que é um estado inválido.
@@ -76,7 +76,7 @@ public abstract class Personagem extends Sprite {
   /**
    * Identificador do estado atual do personagem.
    */
-  protected int iEstadoAtual = Personagem.EST_PERSON_INVALIDO;
+  protected int iEstadoAtual = GjME_Personagem.EST_PERSON_INVALIDO;
   /**
    * Faz a alteração de estado atual do personagem.
    *
@@ -95,9 +95,9 @@ public abstract class Personagem extends Sprite {
   public void setEstado(int iID) {
     if (this.iEstadoAtual != iID) {
       this.iEstadoAtual = iID;
-      this.estadoAtual = (Estado)this.hstEstados.get(
+      this.estadoAtual = (GjME_Estado)this.hstEstados.get(
         new Integer(this.iEstadoAtual));
-      this.estadoAtual.setStatus(Estado.STS_EST_EM_EXECUCAO);
+      this.estadoAtual.setStatus(GjME_Estado.STS_EST_EM_EXECUCAO);
       this.setFrameSequence(this.estadoAtual.getFrames());
     }
   }
@@ -110,13 +110,13 @@ public abstract class Personagem extends Sprite {
    *
    * @see Personagem.nextFrame();
    */
-  protected Estado estadoAtual = null;
+  protected GjME_Estado estadoAtual = null;
   /**
    * Retorna o estado atual do personagem.
    *
    * @return Estado atual do pesonagem. Personagem.estadoAtual;
    */
-  public Estado getEstado() { return this.estadoAtual; }
+  public GjME_Estado getEstado() { return this.estadoAtual; }
 
   /**
    * Indica que a seqüência de frames do personagem acabou de ser trocada.
@@ -142,8 +142,8 @@ public abstract class Personagem extends Sprite {
    *
    * @param iID O Identificador do estado desejado.
    */
-  public Estado getEstado(int iID) {
-    return (Estado)this.hstEstados.get(new Integer(this.iEstadoAtual));
+  public GjME_Estado getEstado(int iID) {
+    return (GjME_Estado)this.hstEstados.get(new Integer(this.iEstadoAtual));
   }
   /**
    * Adiciona estados à lista de estados válidos do personagem.
@@ -157,7 +157,7 @@ public abstract class Personagem extends Sprite {
    * @see Persoangem.hstEstados;
    * @see Estado;
    */
-  protected void addEstado(int iID, Estado std) {
+  protected void addEstado(int iID, GjME_Estado std) {
     this.hstEstados.put(new Integer(iID), std);
   }
 
@@ -172,7 +172,7 @@ public abstract class Personagem extends Sprite {
    *
    * @see Direcoes;
    */
-  private int iDirecaoPersonagem = Direcoes.DIREITA;
+  private int iDirecaoPersonagem = GjME_Direcoes.DIREITA;
   /**
    * Retorna a direção para a qual o personagem está virado.
    *
@@ -189,9 +189,9 @@ public abstract class Personagem extends Sprite {
    * @see javax.microedition.lcdui.game.Sprite.setTransform();
    */
   public void setDirecaoPersonagem(int iNovaDirecao) {
-    if (this.bRefletirSprite && iNovaDirecao == Direcoes.DIREITA) {
+    if (this.bRefletirSprite && iNovaDirecao == GjME_Direcoes.DIREITA) {
       this.setTransform(Sprite.TRANS_NONE);
-    } else if (this.bRefletirSprite && iNovaDirecao == Direcoes.ESQUERDA) {
+    } else if (this.bRefletirSprite && iNovaDirecao == GjME_Direcoes.ESQUERDA) {
       this.setTransform(Sprite.TRANS_MIRROR);
     }
     this.iDirecaoPersonagem = iNovaDirecao;
@@ -236,7 +236,7 @@ public abstract class Personagem extends Sprite {
    * @param iTelaLargura Largura da tela para cálculos de deslocamento do personagem;
    * @param iTelaAltura Altura da tela para cálculos de deslocamento do personagem;
    */
-  public Personagem(Image imgSS, int iWidth, int iHeight,
+  public GjME_Personagem(Image imgSS, int iWidth, int iHeight,
           int iX, int iY, int iTelaLargura, int iTelaAltura, int iVelDeslocamento) {
     super(imgSS, iWidth, iHeight);
     this.defineReferencePixel(iWidth / 2, iHeight / 2);
@@ -285,7 +285,7 @@ public abstract class Personagem extends Sprite {
       if (!this.estadoAtual.estadoContinuo()) {
         if (!this.estadoAtual.finalizado()) {
           if (this.getFrame() == this.estadoAtual.getFrames().length - 1) {
-            this.estadoAtual.setStatus(Estado.STS_EST_FINALIZADO);
+            this.estadoAtual.setStatus(GjME_Estado.STS_EST_FINALIZADO);
             super.setFrameSequence(new int[] {
               this.estadoAtual.getFrames()[this.estadoAtual.getFrames().length - 1]});
             if (this.estadoAtual.posEstadoValido()) {
@@ -312,12 +312,12 @@ public abstract class Personagem extends Sprite {
    */
   public void deslocarNaHorizontal(int iAjusteVelocidade) {
     // -- Deslocamento para a direita
-    if (this.iDirecaoPersonagem == Direcoes.DIREITA) {
+    if (this.iDirecaoPersonagem == GjME_Direcoes.DIREITA) {
       if ((this.iTelaLargura - this.getRefPixelX()) > this.iVelDeslocamento + iAjusteVelocidade) {
         this.setPosition(this.getX() + this.iVelDeslocamento + iAjusteVelocidade, this.getY());
       }
     // -- Deslocamento para a esquerda
-    } else if (this.iDirecaoPersonagem == Direcoes.ESQUERDA) {
+    } else if (this.iDirecaoPersonagem == GjME_Direcoes.ESQUERDA) {
       if ((this.getRefPixelX() - (this.iVelDeslocamento + iAjusteVelocidade)) > 0) {
         this.setPosition(this.getX() - (this.iVelDeslocamento + iAjusteVelocidade), this.getY());
       }

@@ -36,21 +36,21 @@
  */
 package br.com.upzone.gjme.personagem.estado;
 
-import br.com.upzone.gjme.personagem.Personagem;
+import br.com.upzone.gjme.personagem.GjME_Personagem;
 
 /**
  * @TODO OS STATUS DOS PRÉ ESTADOS DEVEM SER REDEFINIDOS LOGO QUE O ESTADO PRINCIPAL
  * @TODO É REINICIADO / INICIADO
  * @abstract
  */
-public abstract class Estado {
+public abstract class GjME_Estado {
 
   public final static boolean TIP_EST_CONTINUO = true;
   public final static boolean TIP_EST_NAO_CONTINUO = false;
   
-  protected boolean bTipoEstado = Estado.TIP_EST_CONTINUO;
+  protected boolean bTipoEstado = GjME_Estado.TIP_EST_CONTINUO;
   public boolean estadoContinuo() { return this.bTipoEstado; }
-  public Estado defineContinuidade(boolean bContinuo) { this.bTipoEstado = bContinuo; return this; }
+  public GjME_Estado defineContinuidade(boolean bContinuo) { this.bTipoEstado = bContinuo; return this; }
 
   /**
    * Indica que o estado ainda não iniciou seu ciclo de execução.
@@ -70,7 +70,7 @@ public abstract class Estado {
    * @see Estado.EM_EXECUCAO;
    * @see Estado.FINALIZADO;
    */
-  protected int iStatus = Estado.STS_EST_PARADO;
+  protected int iStatus = GjME_Estado.STS_EST_PARADO;
 
   /**
    * Define um status para o estado.
@@ -92,7 +92,7 @@ public abstract class Estado {
   public int getStatus() { return this.iStatus; }
 
   public boolean finalizado() {
-    return (this.iStatus == Estado.STS_EST_FINALIZADO);
+    return (this.iStatus == GjME_Estado.STS_EST_FINALIZADO);
   }
 
   /**
@@ -108,19 +108,19 @@ public abstract class Estado {
    *
    * @see br.com.upzone.gjme.personagem.Personagem
    */
-  protected Personagem personagem;
+  protected GjME_Personagem personagem;
 
   /**
    * Indica um estado que deve ser executado antes deste.
    */
-  protected int iPreEstado = Personagem.EST_PERSON_INVALIDO;
+  protected int iPreEstado = GjME_Personagem.EST_PERSON_INVALIDO;
   /**
    * Indica um estado que deve ser executado após este.
    */
-  protected int iPosEstado = Personagem.EST_PERSON_INVALIDO;
+  protected int iPosEstado = GjME_Personagem.EST_PERSON_INVALIDO;
 
   public boolean posEstadoValido() {
-    return (iPosEstado != Personagem.EST_PERSON_INVALIDO);
+    return (iPosEstado != GjME_Personagem.EST_PERSON_INVALIDO);
   }
 
   /**
@@ -140,7 +140,7 @@ public abstract class Estado {
    * @param psg Referência para o personagem dono do estado;
    * @param iarFrames Seqüência de identificadores dos frames da animação do estado. Ex: {7, 5, 3}
    */
-  protected Estado(Personagem psg, int iID, int[] iarFrames) {
+  protected GjME_Estado(GjME_Personagem psg, int iID, int[] iarFrames) {
     this.personagem = psg;
     this.iarFrames = iarFrames;
     this.iID = iID;
@@ -153,7 +153,7 @@ public abstract class Estado {
    * @param iFrameInicial O identificador do frame inicial da animação;
    * @param iFrameFinal O identificador do frame final da animação;
    */
-  protected Estado(Personagem psg, int iID, int iFrameInicial, int iFrameFinal) {
+  protected GjME_Estado(GjME_Personagem psg, int iID, int iFrameInicial, int iFrameFinal) {
     this.iarFrames = new int[iFrameFinal - iFrameInicial + 1];
     int j = 0;
     for (int i = iFrameInicial; i <= iFrameFinal; i++) {
@@ -194,7 +194,7 @@ public abstract class Estado {
    * 
    * @param posEstado Um novo pós estado para este estado.
    */
-  public Estado setPosEstado(int iPosEstado) {
+  public GjME_Estado setPosEstado(int iPosEstado) {
     this.iPosEstado = iPosEstado;
     return this;
   }

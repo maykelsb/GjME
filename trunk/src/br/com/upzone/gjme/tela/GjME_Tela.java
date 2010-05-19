@@ -45,7 +45,7 @@ import javax.microedition.lcdui.game.LayerManager;
  * @author Maykel "Gardner" dos Santos braz <maykelsb@yahoo.com.br>
  * @abstract
  */
-public abstract class Tela extends GameCanvas implements Runnable {
+public abstract class GjME_Tela extends GameCanvas implements Runnable {
 
   /**
    * Indica o status atual da tela.
@@ -76,7 +76,7 @@ public abstract class Tela extends GameCanvas implements Runnable {
   /**
    * Controi uma nova tela.
    */
-  public Tela() {
+  public GjME_Tela() {
     super(true);
   }
 

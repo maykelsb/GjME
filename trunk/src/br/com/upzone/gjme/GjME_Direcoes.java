@@ -40,7 +40,7 @@ package br.com.upzone.gjme;
  *
  * @author Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  */
-public final class Direcoes {
+public final class GjME_Direcoes {
   /**
    * Indica o lado direto.
    */

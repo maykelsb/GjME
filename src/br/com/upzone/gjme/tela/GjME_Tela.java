@@ -36,70 +36,72 @@
  */
 package br.com.upzone.gjme.tela;
 
+import br.com.upzone.gjme.layer.GjME_TiledLayer;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.game.GameCanvas;
+import javax.microedition.lcdui.game.Layer;
 import javax.microedition.lcdui.game.LayerManager;
 
-/*
- * @TODO Implementar DEBUG
- * @author Maykel "Gardner" dos Santos braz <maykelsb@yahoo.com.br>
+/**
+ * Implementação de um GameCanvas para tratamento das telas do game.
+ *
+ * @author Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  * @abstract
  */
 public abstract class GjME_Tela extends GameCanvas implements Runnable {
 
   /**
-   * Indica o status atual da tela.
-   *
-   * Quando ativa, indica que a thread desta tela está em execução. Quando
-   * inativa, a thread da tela está parada ou deverá ser parada.
+   * Indica o status de execução atual da thread.
    */
-  protected boolean bAtiva = false;
+  protected boolean bTelaAtiva = false;
 
   /**
-   * Tempo de espera do loop de atualização da tela.
-   *
-   * Este valor poderá ser alterado quando in-game para realizar efeitos de
-   * camera lenta ou de fast forward.
+   * Tempo de pausa entre atualizações da tela.
    */
   protected int iDelay = 100;
 
   /**
-   * Cor de fundo das camadas.
+   * RGB da cor utilizada como fundo do game.
    */
   protected int iCorFundo = 0xFF00FF;
 
   /**
-   * Gerênciador de layers da tela.
+   * Gerenciador de camadas do game.
    */
-  protected LayerManager layermanager = new LayerManager();
+  protected LayerManager lm = new LayerManager();
 
-  /**
-   * Controi uma nova tela.
-   */
+ /**
+  * Construtor de telas.
+  */
   public GjME_Tela() {
     super(true);
+    this.setFullScreenMode(true);
   }
 
   /**
-   * Inicia a atualização da tela.
+   * Inicia a thread de atualização da tela do game.
    */
   public void start() {
-    this.bAtiva = true;
+    this.bTelaAtiva = true;
     new Thread(this).start();
   }
 
   /**
-   * Interrompe a atualização da tela.
+   * Finaliza a thread de atualização da tela do game.
    */
   public void stop() {
-    this.bAtiva = false;
+    this.bTelaAtiva = false;
   }
 
+  /**
+   * Código de execução da thread faz leitura de inputs e desenha o conteúdo do layermanager.
+   */
   public void run() {
-    Graphics graphics = this.getGraphics();
-    while (this.bAtiva) {
+    Graphics g = this.getGraphics();
+    while (this.bTelaAtiva) {
       this.processarInput();
-      this.desenhar(graphics);
+      this.atualizarLayers();
+      this.desenhar(g);
       try {
         Thread.sleep(this.iDelay);
       } catch (InterruptedException iex) {
@@ -109,25 +111,34 @@ public abstract class GjME_Tela extends GameCanvas implements Runnable {
   }
 
   /**
-   * Desenha os objetos anexados ao layermanager da tela.
-   *
-   * Os objetos com representação gráfica que deverão ser pintados na tela
-   * deverão estar anexados ao layermanager para que sejam pintados na tela.
-   *
-   * @param g Recurso de desenho.
+   * Define a cor de fundo da tela do game e pinta o conteúdo do LayerManager.
+   * @param g Recurso de desenho do sistema.
    */
-  public void desenhar(Graphics g) {
+  private void desenhar(Graphics g) {
     g.setColor(this.iCorFundo);
     g.fillRect(0, 0, this.getWidth(), this.getHeight());
-    this.layermanager.paint(g, 0, 0);
+    this.lm.paint(g, 0, 0);
     this.flushGraphics();
   }
 
   /**
-   * Processa os comandos do jogador.
+   * Atualiza as GjME_TiledLayer armazenadas no LayerManager.
+   */
+  private void atualizarLayers() {
+    int iQtdLayers = this.lm.getSize();
+    for (int i = 0; i < iQtdLayers; i++) {
+      Layer lyr = this.lm.getLayerAt(i);
+      if (lyr instanceof GjME_TiledLayer) {
+        ((GjME_TiledLayer)lyr).atualizarPosicionamento();
+      }
+    }
+  }
+
+  /**
+   * Processa os comandos inseridos pelo jogador.
    *
-   * A depender da implementação da tela, podem ser comandos de movimentação do
-   * personagem jogador ou seleções em uma tela de menu.
+   * Dependendo da implementação da tela, podem ser comandos de movimentação
+   * dos personagens, navegação em um menu, etc.
    */
   public abstract void processarInput();
 }

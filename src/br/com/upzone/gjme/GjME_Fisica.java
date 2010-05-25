@@ -1,4 +1,4 @@
-/*
+/**
  * GjME - Game JavaME
  * A Framework to build JavaME games quickly.
  * Copyright (c) 2009 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
@@ -39,32 +39,14 @@ package br.com.upzone.gjme;
 /**
  *
  * @author Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
+ * @final
  */
-public final class GjME_Direcoes {
-  /**
-   * Indica o lado direto.
-   *
-   * Deslocamento positivo no eixo X.
-   */
-  public final static int DIREITA = 0;
-  /**
-   * Indica o lado esquerdo.
-   *
-   * Deslocamento negativo no eixo X.
-   */
-  public final static int ESQUERDA = 1;
+public final class GjME_Fisica {
 
   /**
-   * Indica o lado de baixo da tela.
-   *
-   * Deslocamento positivo no eixo Y.
+   * Indica a aceleração da gravidade em pixels por frame.
    */
-  public final static int BAIXO = 2;
+  public static final int GRAVIDADE = 9;
 
-  /**
-   * Indica o lado de cima da tela.
-   * 
-   * Deslocamento negativo no eixo Y.
-   */
-  public final static int CIMA = 3;
+
 }

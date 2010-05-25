@@ -1,4 +1,4 @@
-/*
+/**
  * GjME - Game JavaME
  * A Framework to build JavaME games quickly.
  * Copyright (c) 2009 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
@@ -36,11 +36,13 @@
  */
 package br.com.upzone.gjme.tela;
 
-import br.com.upzone.gjme.layer.GjME_TiledLayer;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.game.GameCanvas;
 import javax.microedition.lcdui.game.Layer;
 import javax.microedition.lcdui.game.LayerManager;
+
+import br.com.upzone.gjme.layer.GjME_TiledLayer;
+import br.com.upzone.gjme.personagem.GjME_Personagem;
 
 /**
  * Implementação de um GameCanvas para tratamento das telas do game.
@@ -130,6 +132,8 @@ public abstract class GjME_Tela extends GameCanvas implements Runnable {
       Layer lyr = this.lm.getLayerAt(i);
       if (lyr instanceof GjME_TiledLayer) {
         ((GjME_TiledLayer)lyr).atualizarPosicionamento();
+      } else if (lyr instanceof GjME_Personagem) {
+        ((GjME_Personagem)lyr).nextFrame();
       }
     }
   }

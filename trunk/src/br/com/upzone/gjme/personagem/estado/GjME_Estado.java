@@ -1,4 +1,4 @@
-/*
+/**
  * GjME - Game JavaME
  * A Framework to build JavaME games quickly.
  * Copyright (c) 2009 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>

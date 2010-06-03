@@ -1,7 +1,7 @@
 /**
  * GjME - Game JavaME
  * A Framework to build JavaME games quickly.
- * Copyright (c) 2009 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
+ * Copyright (c) 2009-2010 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  * -----------------------------------------------------------------------------
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -91,9 +91,7 @@ public abstract class GjME_Tela extends GameCanvas implements Runnable {
   /**
    * Finaliza a thread de atualização da tela do game.
    */
-  public void stop() {
-    this.bTelaAtiva = false;
-  }
+  public void stop() { this.bTelaAtiva = false; }
 
   /**
    * Código de execução da thread faz leitura de inputs e desenha o conteúdo do layermanager.
@@ -133,7 +131,7 @@ public abstract class GjME_Tela extends GameCanvas implements Runnable {
       if (lyr instanceof GjME_TiledLayer) {
         ((GjME_TiledLayer)lyr).atualizarPosicionamento();
       } else if (lyr instanceof GjME_Personagem) {
-        ((GjME_Personagem)lyr).nextFrame();
+        ((GjME_Personagem)lyr).atualizarPersonagem();
       }
     }
   }

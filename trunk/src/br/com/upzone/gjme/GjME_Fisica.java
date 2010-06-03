@@ -1,7 +1,7 @@
 /**
  * GjME - Game JavaME
  * A Framework to build JavaME games quickly.
- * Copyright (c) 2009 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
+ * Copyright (c) 2009-2010 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  * -----------------------------------------------------------------------------
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -46,7 +46,42 @@ public final class GjME_Fisica {
   /**
    * Indica a aceleração da gravidade em pixels por frame.
    */
-  public static final int GRAVIDADE = 9;
+  public static final int GRAVIDADE = 2;
 
+  /**
+   * Indica a desaceleração sobre uma superficie coum.
+   */
+  public static final int ATRITO = 2;
 
+  /**
+   * Velocidade média de deslocamento dos personagens.
+   */
+  public static final int VELOCIDADE_MEDIA = 7;
+
+  /**
+   * Indica o lado direto.
+   *
+   * Deslocamento positivo no eixo X.
+   */
+  public final static int DIREITA = 0;
+  /**
+   * Indica o lado esquerdo.
+   *
+   * Deslocamento negativo no eixo X.
+   */
+  public final static int ESQUERDA = 1;
+
+  /**
+   * Indica o lado de baixo da tela.
+   *
+   * Deslocamento positivo no eixo Y.
+   */
+  public final static int BAIXO = 2;
+
+  /**
+   * Indica o lado de cima da tela.
+   *
+   * Deslocamento negativo no eixo Y.
+   */
+  public final static int CIMA = 3;
 }

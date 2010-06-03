@@ -36,11 +36,13 @@
  */
 package br.com.upzone.gjme.personagem;
 
+import javax.microedition.lcdui.game.LayerManager;
+
 /**
  *
  * @author Gardner
  */
 public interface GjME_IPersonagemControlavel {
 
-  public void processarInput(int iKey);
+  public void processarInput(int iKey, LayerManager lm);
 }

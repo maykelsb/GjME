@@ -1,7 +1,7 @@
 /**
  * GjME - Game JavaME
  * A Framework to build JavaME games quickly.
- * Copyright (c) 2009 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
+ * Copyright (c) 2009-2010 Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  * -----------------------------------------------------------------------------
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
@@ -37,149 +37,137 @@
 package br.com.upzone.gjme.personagem;
 
 import java.util.Hashtable;
+import java.util.Stack;
 
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
 
-import br.com.upzone.gjme.GjME_Direcoes;
-import br.com.upzone.gjme.personagem.estado.GjME_Estado;
+import br.com.upzone.gjme.GjME_Fisica;
+import br.com.upzone.gjme.personagem.acao.GjME_Acao;
 
 /**
  * Classe base para definição de personagens.
  *
  * Disponibiliza as seguintes características de um personagem:
- *   * Pontos de vida;
- *   * Direção para a qual o personagem está virado;
- *   * Velocidade de deslocamento;
- *   * Estado do personagem (Parado, Andando, etc.);
+ *   Pontos de vida;
+ *   Direção para a qual o personagem está virado;
+ *   Ações do personagem (Parar, Andar, etc.);
  * Disponibiliza os seguintes controladores para um personagem:
- *   * Controle de mundaça de estados;
- *   * Controladores de mudança de direção;
+ *   Controle de transição de ações;
+ *   Controladores de mudança de direção;
  * Faz sobrecarga dos seguintes métodos de Sprite:
- *   * javax.microedition.lcdui.game.Sprite.nextFrame();
- *   * javax.microedition.lcdui.game.Sprite.setFrameSequence();
+ *   javax.microedition.lcdui.game.Sprite.nextFrame();
+ *   javax.microedition.lcdui.game.Sprite.setFrameSequence();
  *
+ * @TODO Definir pilha de execução de ações nesta classe para evitar que este
+ * controle seja feito dentro dos objetos de estados.
  * @author Maykel "Gardner" dos Santos Braz <maykelsb@yahoo.com.br>
  * @abstract
  */
 public abstract class GjME_Personagem extends Sprite {
   
   /**
-   * Indica o estado inicial do personagem, que é um estado inválido.
+   * Indica a ação que o personagem assume assim que é criado.
    */
-  public final static int EST_PERSON_INVALIDO = -1;
+  public final static int ACAO_INVALIDA = -1;
   /**
-   * Indica o estado associado a ação de ficar parado;
+   * Indica a ação de ficar parado.
    */
-  public final static int EST_PERSON_PARADO = 0;
+  public final static int ACAO_AGUARDAR = 0;
 
   /**
-   * Identificador do estado atual do personagem.
+   * Armazena as possíveis ações de um personagem.
+   *
+   * As ações são identificados pelos valores de constantes iniciadas em ACAO_ que
+   * definem identificadores para cada uma das ações criadas para o personagem.
    */
-  protected int iEstadoAtual = GjME_Personagem.EST_PERSON_INVALIDO;
+  protected Hashtable hstAcoes = new Hashtable();
+
   /**
-   * Faz a alteração de estado atual do personagem.
+   * Indica que os frames do personagem devem ser refletidos ao mudar de direção.
    *
-   * Ao realizar a troca de estado, seta o atual estado como o último estado e
-   * define a seqüência de frames do estado como a seqüência em execução. Sempre
-   * que um novo estado é setado, sua seqüência de frames é definida como a
-   * seqüência de frames do personagem e seu status é setado como STS_EST_EM_EXECUCAO.
-   * A troca de estados do personagem só acontece se o estado em que o personagem
-   * se encontra for diferente do novo estado.
-   *
-   * @param iID Identificador do novo estado do personagem;
-   *
-   * @see javax.microedition.lcdui.game.Sprite;
-   * @see Estado.STS_EST_EM_EXECUCAO;
+   * @see Personagem.setDirecaoPersonagem();
    */
-  public void setEstado(int iID) {
-    if (this.iEstadoAtual != iID) {
-      this.iEstadoAtual = iID;
-      this.estadoAtual = (GjME_Estado)this.hstEstados.get(
-        new Integer(this.iEstadoAtual));
-      this.estadoAtual.setStatus(GjME_Estado.STS_EST_EM_EXECUCAO);
-      this.setFrameSequence(this.estadoAtual.getFrames());
+  protected boolean bRefletirSprite = false;
+
+  /**
+   * Indica a direção para a qual o personagem está se movimentando
+   *
+   * Valores válidos são: GjME_Fisica.DIREITA e GjME_Fisicao.ESQUERDA.
+   */
+  protected int direcaoPersonagem = GjME_Fisica.DIREITA;
+
+  /**
+   * Quantidade de pontos de vida do personagem.
+   */
+  protected int iPontosDeVida = 0;
+
+  /**
+   * Velocidade de deslocamento do personagem no eixo X.
+   */
+  protected int iVelX = 0;
+  /**
+   * Velocidade de deslocamento do personagem no eixo Y.
+   */
+  protected int iVelY = 0;
+
+  /**
+   * Pilha de ações para execução.
+   *
+   * Sempre que uma nova ação deva ser executada, ela vai para o topo da pilha.
+   * Se a ação no topo da pilha é finita, assim que ela for finalizada e removida
+   * da pilha. O esquema de pré e pós ações será implementado com a ajuda desta
+   * pilha, onde pré-ações são empilhadas após a ação atual e pós estados são
+   * empilhados antes da ação atual.
+   */
+  protected Stack stkAcoes = new Stack();
+
+  public void empilharAcao(int IDAcao) {
+    if (((GjME_Acao)this.stkAcoes.peek()).retornaIDAcao() != IDAcao) {
+      GjME_Acao acao = (GjME_Acao)this.hstAcoes.get(new Integer(IDAcao));
+      //acao.defineEstadoExecucao(GjME_Acao.ACAO_EM_EXECUCAO);
+      this.setFrameSequence(acao.retornaFrames());
+      this.stkAcoes.push(acao);
     }
   }
 
   /**
-   * Referência para o estado atual do personagem.
-   *
-   * Esta referência é utilizada para facilitar o controle de frames e de
-   * mudança de estados e seqüência de frames do personagem.
-   *
-   * @see Personagem.nextFrame();
+   * Retorna a ação atual do personagem.
+   * @return Ação que o personagem esta executando.
    */
-  protected GjME_Estado estadoAtual = null;
-  /**
-   * Retorna o estado atual do personagem.
-   *
-   * @return Estado atual do pesonagem. Personagem.estadoAtual;
-   */
-  public GjME_Estado getEstado() { return this.estadoAtual; }
+  //public GjME_Acao retornaAcaoAtual() { return (GjME_Acao)this.stkAcoes.peek(); }
 
   /**
-   * Indica que a seqüência de frames do personagem acabou de ser trocada.
-   *
-   * Este atributo evita que o primeiro frame da seqüência atual seja pulada
-   * com a sobrecarga de javax.microedition.lcdui.game.Sprite.nextFrame() ao
-   * trocar a seqüência, o primeiro frame era ignorado, avançando já para o segundo.
-   *
-   * @see Personagem.setFrameSequence();
-   * @see Personagem.nextFrame();
+   * Retorna a ação identificada pelo ID informado.
+   * @param ID Identificador da ação;
+   * @return A ação identificado pelo ID.
    */
-  private boolean bSequenciaFramesTrocada = false;
-
+  //public GjME_Acao retornaAcao(int ID) {
+//    return (GjME_Acao)this.hstAcoes.get(new Integer(ID));
+//  }
   /**
-   * Armazena os estados válidos para personagens base.
-   * 
-   * Personagens jogadores/chefes de fase podem expandir esta a lista de
-   * estados possíveis implementando novos estados.
-   */
-  protected Hashtable hstEstados = new Hashtable();
-  /**
-   * Retorna o estado identificado pelo ID informado.
+   * Adiciona açoes à lista de ações válidas do personagem.
    *
-   * @param iID O Identificador do estado desejado.
-   */
-  public GjME_Estado getEstado(int iID) {
-    return (GjME_Estado)this.hstEstados.get(new Integer(this.iEstadoAtual));
-  }
-  /**
-   * Adiciona estados à lista de estados válidos do personagem.
+   * Cada uma das novas ações é identificada por uma constante definda em
+   * GjME_Personagem ou em suas descendentes. É recomendado que estas constantes
+   * tem seu nome iniciado por ACAO_.
    *
-   * Cada um dos novos estados deve ser indentificado por uma constante
-   * de identificação de estado como por exemplo: Personagem.PARADO;
-   *
-   * @param iID Valor de identificação do Estado. Ex: Personagem.EST_PERSON_PARADO;
-   * @param std Novo estado do personagem;
-   * @see Personagem.EST_PERSON_PARADO;
-   * @see Persoangem.hstEstados;
-   * @see Estado;
+   * @param iID Valor de identificação da ação. Ex: Personagem.ACAO_PARAR;
+   * @param acao Nova ação do personagem;
+   * @see GjME_Acao;
    */
-  protected void addEstado(int iID, GjME_Estado std) {
-    this.hstEstados.put(new Integer(iID), std);
+  protected void adicionarAcao(int iID, GjME_Acao acao) {
+    acao.defineIDAcao(iID);
+    this.hstAcoes.put(new Integer(iID), acao);
   }
 
-  /**
-   * Indica que os frames do personagem devem ser refletidos ao mudar de direção.
-   * 
-   * @see Personagem.setDirecaoPersonagem();
-   */
-  protected boolean bRefletirSprite = false;
-  /**
-   * Indica a direção para a qual o personagem está virado.
-   *
-   * @see Direcoes;
-   */
-  private int iDirecaoPersonagem = GjME_Direcoes.DIREITA;
   /**
    * Retorna a direção para a qual o personagem está virado.
    *
    * @return Direção do personagem.
-   * @see Personagem.iDirecaoPersonagem
+   * @see Personagem.direcaoPersonagem
    */
-  public int getDirecaoPersonagem() { return this.iDirecaoPersonagem; }
+  public int direcaoPersonagem() { return this.direcaoPersonagem; }
 
   /**
    * Define uma nova direção para o personagem.
@@ -188,39 +176,14 @@ public abstract class GjME_Personagem extends Sprite {
    * @see Personagem.iDirecaoPersonagem;
    * @see javax.microedition.lcdui.game.Sprite.setTransform();
    */
-  public void setDirecaoPersonagem(int iNovaDirecao) {
-    if (this.bRefletirSprite && iNovaDirecao == GjME_Direcoes.DIREITA) {
+  public void direcaoPersonagem(int iNovaDirecao) {
+    if (this.bRefletirSprite && iNovaDirecao == GjME_Fisica.DIREITA) {
       this.setTransform(Sprite.TRANS_NONE);
-    } else if (this.bRefletirSprite && iNovaDirecao == GjME_Direcoes.ESQUERDA) {
+    } else if (this.bRefletirSprite && iNovaDirecao == GjME_Fisica.ESQUERDA) {
       this.setTransform(Sprite.TRANS_MIRROR);
     }
-    this.iDirecaoPersonagem = iNovaDirecao;
+    this.direcaoPersonagem = iNovaDirecao;
   }
-
-  /**
-   * Largura da tela do dispositivo.
-   * 
-   * Utilizado para cálculos de deslocamento do personagem.
-   * @see Personagem.deslocarNaHorizontal();
-   */
-  private int iTelaLargura;
-  /**
-   * Altura da tela do dispositivo.
-   *
-   * Utilizado para cálculos de deslocamento do personagem.
-   * @see Personagem.deslocarNaVertical();
-   */
-  private int iTelaAltura;
-
-  /**
-   * Quantidade de pontos de vida do personagem.
-   */
-  protected int iPontosDeVida = 0;
-  /**
-   * Velocidade de deslocamento do personagem andando.
-   * Se o personagem estiver correndo, aumente em 50%;
-   */
-  protected int iVelDeslocamento = 5;
 
   /**
    * Cria um novo personagem.
@@ -237,14 +200,10 @@ public abstract class GjME_Personagem extends Sprite {
    * @param iTelaAltura Altura da tela para cálculos de deslocamento do personagem;
    */
   public GjME_Personagem(Image imgSS, int iWidth, int iHeight,
-          int iX, int iY, int iTelaLargura, int iTelaAltura, int iVelDeslocamento) {
+          int iX, int iY, int iTelaLargura, int iTelaAltura) {
     super(imgSS, iWidth, iHeight);
     this.defineReferencePixel(iWidth / 2, iHeight / 2);
     this.setPosition(iX, iY);
-    this.iVelDeslocamento = iVelDeslocamento;
-
-    this.iTelaLargura = iTelaLargura;
-    this.iTelaAltura = iTelaAltura;
   }
 
   /**
@@ -260,11 +219,16 @@ public abstract class GjME_Personagem extends Sprite {
    */
   public void setFrameSequence(int[] iaFrames) {
     super.setFrameSequence(iaFrames);
-    this.bSequenciaFramesTrocada = true;
+    //this.bSequenciaFramesTrocada = true;
   }
   
   /**
    * Troca o frame atual do sprite pelo próximo na seqüência.
+   *
+   * 
+   *
+   *
+   *
    *
    * Um personagem pode ter uma seqüência de frame que não seja repetida, neste
    * caso, é preciso controlar o que acontece assim que a seqüência chega ao fim.
@@ -277,55 +241,35 @@ public abstract class GjME_Personagem extends Sprite {
    * @see Personagem.bSequenciaFramesTrocada;
    * @see Estado.estadoContinuo();
    */
-  public void nextFrame() {
-    if (this.bSequenciaFramesTrocada) {
-      this.bSequenciaFramesTrocada = false;
-      this.setFrame(0);
+  public final void nextFrame() {
+    GjME_Acao acao = (GjME_Acao)this.stkAcoes.peek();
+    if (acao.acaoIniciada()) {
+      if (!acao.animacaoContinua() && !acao.acaoFinalizada()
+          && (this.getFrame() == acao.retornaFrames().length - 1)) {
+        acao.defineEstadoExecucao(GjME_Acao.ACAO_FINALIZADA);
+        return;
+      } else if (acao.acaoFinalizada()) {
+        acao = (GjME_Acao)this.stkAcoes.pop();
+        acao.defineEstadoExecucao(GjME_Acao.ACAO_NAO_INICIADA);
+        this.nextFrame();
+      }
     } else {
-      if (!this.estadoAtual.estadoContinuo()) {
-        if (!this.estadoAtual.finalizado()) {
-          if (this.getFrame() == this.estadoAtual.getFrames().length - 1) {
-            this.estadoAtual.setStatus(GjME_Estado.STS_EST_FINALIZADO);
-            super.setFrameSequence(new int[] {
-              this.estadoAtual.getFrames()[this.estadoAtual.getFrames().length - 1]});
-            if (this.estadoAtual.posEstadoValido()) {
-              this.setEstado(this.estadoAtual.getPosEstado());
-            }
-          }
-        }
-      }
-      super.nextFrame();
+      acao.defineEstadoExecucao(GjME_Acao.ACAO_EM_EXECUCAO);
+      this.setFrame(0);
     }
+    super.nextFrame();
   }
 
-  /**
-   * Faz os cálculos de deslocamento horizontal do personagem.
-   */
-  public void deslocarNaHorizontal() {
-    this.deslocarNaHorizontal(0);
-  }
-
-  /**
-   * Faz os cálculos de deslocamento horizontal do personagem.
-   * 
-   * @param iAjusteVelocidade Aplica ajustes no cálculo de velocidade.
-   */
-  public void deslocarNaHorizontal(int iAjusteVelocidade) {
-    // -- Deslocamento para a direita
-    if (this.iDirecaoPersonagem == GjME_Direcoes.DIREITA) {
-      if ((this.iTelaLargura - this.getRefPixelX()) > this.iVelDeslocamento + iAjusteVelocidade) {
-        this.setPosition(this.getX() + this.iVelDeslocamento + iAjusteVelocidade, this.getY());
-      }
-    // -- Deslocamento para a esquerda
-    } else if (this.iDirecaoPersonagem == GjME_Direcoes.ESQUERDA) {
-      if ((this.getRefPixelX() - (this.iVelDeslocamento + iAjusteVelocidade)) > 0) {
-        this.setPosition(this.getX() - (this.iVelDeslocamento + iAjusteVelocidade), this.getY());
-      }
+  public final void atualizarPersonagem() {
+    this.nextFrame();
+    if (GjME_Fisica.DIREITA == this.direcaoPersonagem) {
+      if (this.iVelX > 0) { this.iVelX = Math.max(0, this.iVelX - GjME_Fisica.ATRITO); }
+    } else if (GjME_Fisica.ESQUERDA == this.direcaoPersonagem) {
+      if (this.iVelX < 0) { this.iVelX = Math.min(0, this.iVelX + GjME_Fisica.ATRITO); }
     }
+    if (this.iVelY != 0) { this.iVelY = this.iVelY - GjME_Fisica.GRAVIDADE; }
+    this.setPosition(this.getX() + this.iVelX, this.getY() + this.iVelY);
   }
 
-  /**
-   * Faz os cálculos de deslocamento vertical do personagem.
-   */
-  public void deslocarNaVertical() { }
+  public final void desempilharAcoes() { }
 }

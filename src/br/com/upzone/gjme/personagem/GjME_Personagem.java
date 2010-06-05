@@ -122,29 +122,45 @@ public abstract class GjME_Personagem extends Sprite {
    */
   protected Stack stkAcoes = new Stack();
 
-  public void empilharAcao(int IDAcao) {
-    if (((GjME_Acao)this.stkAcoes.peek()).retornaIDAcao() != IDAcao) {
+  /**
+   * Empilha as ações que o personagem deve realizar em ordem de execução.
+   *
+   * Também faz o controle do empilhamento das pré e pós ações respeitando a
+   * sua prioridade. Reseta o estado da ação que ficou empilhada (a antiga ação
+   * atual) para que possa ser executada posteriormente sem problemas.
+   * @param IDAcao A ação que deve ser executada.
+   *
+   * @TODO Pode ser que algumas ações ao serem empilhadas, cancelem outras previamente
+   * empilhadas, ou podem exigir que açoes anteriores sejam continuadas do ponto em
+   * que foram interrompidas. Pensar em como resolver estes impasses e se eles são
+   * mesmo necessários ou existem.
+   */
+  public void empilharAcao(int IDAcao) { System.out.println(IDAcao);
+    boolean bEmpilhar = false;
+    if (this.stkAcoes.empty()) { bEmpilhar = true;
+    } else {
+      GjME_Acao acaoAtual = (GjME_Acao)this.stkAcoes.peek();
+      if (acaoAtual.retornaIDAcao() != IDAcao) {
+        bEmpilhar = true;
+        // -- Reinicia a ação anterior para que ela possa ser iniciada posteriormente sem problemas
+        acaoAtual.defineEstadoExecucao(GjME_Acao.ACAO_NAO_INICIADA);
+      } else if (acaoAtual.acaoFinalizada()) {
+        acaoAtual.defineEstadoExecucao(GjME_Acao.ACAO_EM_EXECUCAO);
+      }
+    }
+
+    if (bEmpilhar) {
+      // -- Adicionando as novas ações
       GjME_Acao acao = (GjME_Acao)this.hstAcoes.get(new Integer(IDAcao));
-      //acao.defineEstadoExecucao(GjME_Acao.ACAO_EM_EXECUCAO);
-      this.setFrameSequence(acao.retornaFrames());
+      // -- Empilhando pós ação
+      if (acao.temPosAcao()) { this.empilharAcao(acao.retornaIDPosAcao()); }
+      // -- Empilhando esta ação
       this.stkAcoes.push(acao);
+      // -- Empilhando pré ação
+      if (acao.temPreAcao()) { this.empilharAcao(acao.retornaIDPreAcao()); }
     }
   }
 
-  /**
-   * Retorna a ação atual do personagem.
-   * @return Ação que o personagem esta executando.
-   */
-  //public GjME_Acao retornaAcaoAtual() { return (GjME_Acao)this.stkAcoes.peek(); }
-
-  /**
-   * Retorna a ação identificada pelo ID informado.
-   * @param ID Identificador da ação;
-   * @return A ação identificado pelo ID.
-   */
-  //public GjME_Acao retornaAcao(int ID) {
-//    return (GjME_Acao)this.hstAcoes.get(new Integer(ID));
-//  }
   /**
    * Adiciona açoes à lista de ações válidas do personagem.
    *
@@ -223,38 +239,37 @@ public abstract class GjME_Personagem extends Sprite {
   }
   
   /**
-   * Troca o frame atual do sprite pelo próximo na seqüência.
+   * Troca o frame atual do sprite pelo próximo na seqüência e, se necessário, desempilha ações.
    *
-   * 
-   *
-   *
-   *
-   *
-   * Um personagem pode ter uma seqüência de frame que não seja repetida, neste
-   * caso, é preciso controlar o que acontece assim que a seqüência chega ao fim.
-   * Aqui, a seqüência de frames é alterada da maneira tradicional (chamando
-   * Sprite.setFrameSequence()) para um único frame, o frame que caracteriza
-   * o fim da animação do estado.
+   * Quando uma seqüência de frames de uma ação não é do tipo contínuo, ela deve
+   * exibir apenas o último frame até que a ação seja trocada. Assim que uma ação
+   * é finalizada, ela é removida e a ação anterior continua a ser executada.
    * 
    * @see javax.microedition.lcdui.game.Sprite.nextFrame();
    * @see javax.microedition.lcdui.game.Sprite.setFrameSequence();
-   * @see Personagem.bSequenciaFramesTrocada;
-   * @see Estado.estadoContinuo();
    */
   public final void nextFrame() {
     GjME_Acao acao = (GjME_Acao)this.stkAcoes.peek();
-    if (acao.acaoIniciada()) {
+    if (acao.acaoIniciada()) { // -- Manutenção de ações em execução
+      // -- Se a ação não for do tipo contínua, não está finalizada e atingiu o
+      // -- o último frame da animação, o estado é finalizado e o frame não é
+      // -- atualizado.
       if (!acao.animacaoContinua() && !acao.acaoFinalizada()
           && (this.getFrame() == acao.retornaFrames().length - 1)) {
         acao.defineEstadoExecucao(GjME_Acao.ACAO_FINALIZADA);
         return;
       } else if (acao.acaoFinalizada()) {
+        // -- Se a ação foi finalizada, remova-a da pilha e atualize seu estado
+        // -- para não iniciada permitindo que ela seja reutilizada posteriormente
+        // -- sem problemas.
         acao = (GjME_Acao)this.stkAcoes.pop();
         acao.defineEstadoExecucao(GjME_Acao.ACAO_NAO_INICIADA);
         this.nextFrame();
       }
     } else {
+      // -- Iniciando a execução de uma ação
       acao.defineEstadoExecucao(GjME_Acao.ACAO_EM_EXECUCAO);
+      this.setFrameSequence(acao.retornaFrames());
       this.setFrame(0);
     }
     super.nextFrame();
@@ -271,5 +286,13 @@ public abstract class GjME_Personagem extends Sprite {
     this.setPosition(this.getX() + this.iVelX, this.getY() + this.iVelY);
   }
 
-  public final void desempilharAcoes() { }
+  /**
+   * Desempilha as ações da pilha de ações até chegar a GjME_Personagem.ACAO_AGUARDAR.
+   */
+  public final void desempilharAcoes() {
+    while (GjME_Personagem.ACAO_AGUARDAR != ((GjME_Acao)this.stkAcoes.peek()).retornaIDAcao()) {
+      GjME_Acao acao = (GjME_Acao)this.stkAcoes.pop();
+      acao.defineEstadoExecucao(GjME_Acao.ACAO_NAO_INICIADA);
+    }
+  }
 }

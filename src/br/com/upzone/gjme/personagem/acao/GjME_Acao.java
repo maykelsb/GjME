@@ -198,7 +198,7 @@ public abstract class GjME_Acao {
    * Retorna o ID da pré-ação.
    * @return ID pré-ação.
    */
-  public int retornaPreAcao() { return this.IDPreAcao; }
+  public int retornaIDPreAcao() { return this.IDPreAcao; }
   /**
    * Define uma pós-ação para ser executada após esta ação.
    * @param IDAcao O identificador da ação que será utilizada como pós-ação.
@@ -212,20 +212,20 @@ public abstract class GjME_Acao {
    * Retorna o ID da pós-ação.
    * @return ID pós-ação.
    */
-  public int retornaPosAcao() { return this.IDPosAcao; }
+  public int retornaIDPosAcao() { return this.IDPosAcao; }
   /**
    * Indica se existe uma pré-ação.
    * @return Verdadeiro ou falso.
    */
   public boolean temPreAcao() {
-    return GjME_Personagem.ACAO_INVALIDA == this.IDPreAcao;
+    return GjME_Personagem.ACAO_INVALIDA != this.IDPreAcao;
   }
   /**
    * Indica se existe uma pós-ação.
    * @return Verdadeiro ou falso.
    */
   public boolean temPosAcao() {
-    return GjME_Personagem.ACAO_INVALIDA == this.IDPosAcao;
+    return GjME_Personagem.ACAO_INVALIDA != this.IDPosAcao;
   }
 
   /**
@@ -239,9 +239,7 @@ public abstract class GjME_Acao {
    * Cria uma nova ação com uma seqüência de frames pré-determinada.
    * @param  iarFrames Seqüência pré-determinada de frames para a animação.
    */
-  protected GjME_Acao(int[] iarFrames) {
-    this.iarFrames = iarFrames;
-  }
+  protected GjME_Acao(int[] iarFrames) { this.iarFrames = iarFrames; }
   /**
    * Cria uma nova ação com um intervalo de frames.
    * @param iFrameInicial Frame inicial do intervalo de frames;
